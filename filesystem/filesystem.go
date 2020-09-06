@@ -1,6 +1,12 @@
 package filesystem
 
-import "os"
+import (
+	"errors"
+	"image-storage/app/errs"
+	"io"
+	"mime/multipart"
+	"os"
+)
 
 // Exist checks if folder or file exist
 func Exist(path string) (bool, error) {
@@ -24,4 +30,28 @@ func Mkdir(path string) error {
 // Delete delete file
 func Delete(filename string) error {
 	return os.Remove(filename)
+}
+
+// WriteOutputFile Writes the Output image file
+func WriteImage(dir, fileName string, records multipart.File) (err error) {
+
+	exist, _ := Exist(dir)
+	if !exist {
+		err = errors.New(errs.ErrAlbumNotExist)
+		return err
+	}
+
+	existimg, _ := Exist(fileName)
+	if existimg {
+		err = errors.New(errs.ErrImageExist)
+		return err
+	}
+
+	file, err := os.Create(fileName)
+	defer file.Close()
+
+	if _, err = io.Copy(file, records); err != nil {
+		return err
+	}
+	return nil
 }

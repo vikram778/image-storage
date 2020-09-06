@@ -10,7 +10,11 @@ import (
 const (
 	ErrParameterRequired  = "E400001"
 	ErrMaxImages          = "E400002"
-	ErrRequestBodyInvalid = "E400003"
+	ErrMaxLimit           = "E400003"
+	ErrRequestBodyInvalid = "E400004"
+	ErrAlbumNotExist      = "E400005"
+	ErrImageExist         = "E400006"
+	ErrAlbumExist         = "E400007"
 )
 
 // Error constants for 404 bad request
@@ -58,6 +62,10 @@ func init() {
 		http.StatusBadRequest: {
 			ErrParameterRequired: "Parameter `%s` is a required field",
 			ErrMaxImages:         "max no of images for an album reached",
+			ErrMaxLimit:          "max only one image uplaod allowed",
+			ErrAlbumNotExist:     "Album doesn't exist",
+			ErrImageExist:        "Image already exist",
+			ErrAlbumExist:        "Album already exist",
 		},
 		http.StatusNotFound: {
 			ErrResourceNotFound: "Resource Not found",

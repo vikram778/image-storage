@@ -21,3 +21,5 @@ github.com/willf/pad v0.0.0-20200313202418-172aa767f2a4 h1:Y+IMUhhlO9FLTZpNrUAMW
 github.com/willf/pad v0.0.0-20200313202418-172aa767f2a4/go.mod h1:+pVHwmjc9CH7ugBFxESIwQkXkVj0gUj4cFp63TLwP1Y=
 github.com/ziutek/mymysql v1.5.4 h1:GB0qdRGsTwQSBVYuVShFBKaXSnSnYYC2d9knnE1LHFs=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
+gopkg.in/guregu/null.v3 v3.5.0 h1:xTcasT8ETfMcUHn0zTvIYtQud/9Mx5dJqD554SZct0o=
+gopkg.in/guregu/null.v3 v3.5.0/go.mod h1:E4tX2Qe3h7QdL+uZ3a0vqvYwKQsRSQKM5V4YltdgH9Y=
