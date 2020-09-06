@@ -65,16 +65,14 @@ func NewApp() App {
 	return App{}
 }
 
-func test(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode("start")
-}
-
 func (a *App) Init() {
 	var (
 		database *db.DB
 		err      error
 		kconfig  *producer.KafkaConfig
 	)
+
+	a.Logger = logs.New()
 
 	if database, err = db.New(os.Getenv(constant.EnvDbDriver), os.Getenv(constant.EnvDbOpen)); err != nil {
 		return
@@ -89,9 +87,11 @@ func (a *App) Init() {
 	a.DB = database.Connection
 	a.Router = mux.NewRouter()
 	a.Port = os.Getenv("APP_PORT")
-	a.Router.HandleFunc("/test", test)
+	docs := http.StripPrefix("/api/documentation", http.FileServer(http.Dir(os.Getenv(constant.EnvSwaggerPath))))
+	a.Router.PathPrefix("/api/documentation").Handler(docs)
 	a.Router.HandleFunc("/add/image", a.PostImage)
 	a.Router.HandleFunc("/add/album", a.PostAlbum)
+	a.Router.HandleFunc("/get/image/{id}", a.GetImage)
 	a.Router.HandleFunc("/del/image/{id}", a.DeleteImage)
 	a.Router.HandleFunc("/del/album/{tittle}", a.DeleteAlbum)
 }
@@ -125,7 +125,7 @@ func (s *App) Listen() {
 	log.Print("Server Listening to ", s.Port)
 	log.Dump()
 	go s.Jobs()
-	http.ListenAndServe(s.Port, s.Router)
+	s.Logger.Panic(http.ListenAndServe(s.Port, s.Router))
 }
 
 func (r *App) FormatException(resource interface{}, err error, errList ...error) {

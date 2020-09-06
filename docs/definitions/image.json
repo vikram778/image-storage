@@ -1,0 +1,185 @@
+{
+  "baseUrl": "localhost:8080",
+  "paths": {
+    "/get/image/{id}": {
+      "get": {
+        "tags": [
+          "Image"
+        ],
+        "summary": "Get Image",
+        "security": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Image id not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/add/image": {
+      "post": {
+        "parameters": [],
+        "summary": "Add Image",
+        "tags": [
+          "Image"
+        ],
+        "security": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "album_tittle": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "file"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "image_id": {
+                      "type": "int",
+                      "example": 12
+                    },
+                    "image_count": {
+                      "type": "int",
+                      "example": 10
+                    },
+                    "image_name": {
+                      "type": "string",
+                      "example": "xynvnd.png"
+                    },
+                    "album_tittle": {
+                      "type": "string",
+                      "example": "test"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "image already exist"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/del/image/{id}": {
+      "delete": {
+        "summary": "Remove Image",
+        "tags": [
+          "Image"
+        ],
+        "security": [],
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "deleted successfully"
+                    },
+                    "album_tittle": {
+                      "type": "string",
+                      "example": "test"
+                    },
+                    "image_path": {
+                      "type": "string",
+                      "example": "/albums/swgr/xudgfjf.png"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "image doesn't exist"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

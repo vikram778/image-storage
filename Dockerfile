@@ -24,7 +24,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o main
 
 FROM alpine:3.11
 
-RUN mkdir -p /verloop && mkdir -p /log
+RUN mkdir -p /nokia && mkdir -p /log && mkdir -p /album
 
 # Set the Current Working Directory inside the container
 WORKDIR /nokia

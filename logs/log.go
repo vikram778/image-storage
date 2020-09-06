@@ -73,26 +73,6 @@ func New() *Log {
 	return &log
 }
 
-// ShowCount log
-func (l *Log) ShowCount(show bool) {
-	l.showCount = show
-}
-
-// GetIdentify log
-func (l *Log) GetIdentify() string {
-	return l.indentier
-}
-
-// GetCount log
-func (l *Log) GetCount() bool {
-	return l.showCount
-}
-
-// SetIdentify log
-func (l *Log) SetIdentify(tag string) {
-	l.indentier = pad.Right(tag, 15, " ")
-}
-
 func (l *Log) addEntry(level string, v ...interface{}) {
 	l.entries = append(
 		l.entries,
@@ -118,25 +98,6 @@ func (l *Log) Print(v ...interface{}) {
 func (l *Log) Panic(v ...interface{}) {
 	l.addEntry(LogLevelPanic, v...)
 	panic(fmt.Sprint(v...))
-}
-
-// ThrowFatalTest allows Fatal to be testable
-func (l *Log) ThrowFatalTest(msg string) {
-	defer func() { osExit = os.Exit }()
-	osExit = func(int) {}
-	l.Fatal(msg)
-}
-
-// Fatal is equivalent to Print() and followed by a call to os.Exit(1)
-func (l *Log) Fatal(v ...interface{}) {
-	l.addEntry(LogLevelFatal, v...)
-	l.Dump()
-	osExit(1)
-}
-
-// LastEntry returns the last inserted log
-func (l *Log) LastEntry() Entry {
-	return l.entries[len(l.entries)-1]
 }
 
 // Count returns number of inserted logs

@@ -1,0 +1,69 @@
+<!-- HTML for static distribution bundle build -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Swagger UI</title>
+    <link rel="stylesheet" type="text/css" href="/api/documentation/swagger-ui.css" >
+    <link rel="icon" type="image/png" href="/api/documentation/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/api/documentation/favicon-16x16.png" sizes="16x16" />
+    <style>
+      html
+      {
+        box-sizing: border-box;
+        overflow: -moz-scrollbars-vertical;
+        overflow-y: scroll;
+      }
+
+      *,
+      *:before,
+      *:after
+      {
+        box-sizing: inherit;
+      }
+
+      body
+      {
+        margin:0;
+        background: #fafafa;
+      }
+
+      .topbar {
+        background-color: #eaeaea !important;
+      }
+
+      .topbar img[alt="Swagger UI"] {
+        content:url('https://www.matchmove.com/wp-content/uploads/2017/07/MM_MasterLogo_4C_H_500x139px.png') !important;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div id="swagger-ui"></div>
+
+    <script src="/api/documentation/swagger-ui-bundle.js"> </script>
+    <script src="/api/documentation/swagger-ui-standalone-preset.js"> </script>
+    <script>
+    window.onload = function() {
+      // Begin Swagger UI call region
+      const ui = SwaggerUIBundle({
+          url: "/api/documentation/swagger.json",
+          dom_id: '#swagger-ui',
+          deepLinking: true,
+          presets: [
+              SwaggerUIBundle.presets.apis,
+              SwaggerUIStandalonePreset
+          ],
+          plugins: [
+              SwaggerUIBundle.plugins.DownloadUrl
+          ],
+          layout: "StandaloneLayout"
+      })
+      // End Swagger UI call region
+
+      window.ui = ui
+    }
+  </script>
+  </body>
+</html>

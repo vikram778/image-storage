@@ -11,6 +11,7 @@ import (
 	"image-storage/kafka/producer"
 	"image-storage/logs"
 	"image-storage/model"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -228,4 +229,55 @@ func (a *App) DeleteImage(w http.ResponseWriter, r *http.Request) {
 
 	return
 
+}
+
+func (a *App) GetImage(w http.ResponseWriter, r *http.Request) {
+	var (
+		img, _ = model.NewImage(a.DB)
+		err    error
+	)
+
+	defer func() {
+		a.Defer(w)
+	}()
+
+	a.Logger = logs.New()
+	a.Record("Start", time.Now().Format(SQLDatetime))
+
+	a.Record("Resource", "image")
+	a.Record("Method", r.Method)
+	a.Record("URL", r.URL.String())
+
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		a.FormatException(r, errors.New("invalid id"))
+		return
+	}
+
+	imgid, err := strconv.Atoi(id)
+	if err != nil {
+		a.FormatException(r, errors.New(errs.ErrInternalAppError))
+		return
+	}
+	img.ID.SetValid(int64(imgid))
+	err = img.GetImage()
+	if err != nil {
+		if err == sql.ErrNoRows {
+			err = errors.New(errs.ErrImageIDNotFound)
+		}
+		a.FormatException(r, err)
+		return
+	}
+
+	imgp, err := os.Open(img.ImagePath.String)
+	if err != nil {
+		a.FormatException(r, err)
+		return // perhaps handle this nicer
+	}
+	defer imgp.Close()
+	w.Header().Set("Content-Type", "image/jpeg") // <-- set the content-type header
+	io.Copy(w, imgp)
+
+	return
 }
