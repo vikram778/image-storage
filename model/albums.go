@@ -75,3 +75,15 @@ func (me *Album) InsertOrUpdate(ok bool) (err error) {
 	}
 	return nil
 }
+
+func (me *Album) DeleteAlbum() (err error) {
+
+	query := `DELETE FROM albums WHERE id = ?`
+	_, err = me.Db.Exec(query, me.ID)
+	if err != nil {
+		err = errors.New(errs.ErrInternalDBError)
+		return
+	}
+
+	return nil
+}

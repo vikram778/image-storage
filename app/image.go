@@ -33,7 +33,7 @@ func (a *App) PostImage(w http.ResponseWriter, r *http.Request) {
 	a.Logger = logs.New()
 	a.Record("Start", time.Now().Format(SQLDatetime))
 
-	a.Record("Resource", "story")
+	a.Record("Resource", "image")
 	a.Record("Method", r.Method)
 	a.Record("URL", r.URL.String())
 	//a.Record("Request", strings.Replace(string(a.Body(r)), "\n", "", -1))
@@ -137,10 +137,10 @@ func (a *App) PostImage(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) DeleteImage(w http.ResponseWriter, r *http.Request) {
 	var (
-		albm, _      = model.NewAlbum(a.DB)
-		img, _       = model.NewImage(a.DB)
-		res          image.DeleteResponse
-		err          error
+		albm, _ = model.NewAlbum(a.DB)
+		img, _  = model.NewImage(a.DB)
+		res     image.DeleteResponse
+		err     error
 	)
 
 	defer func() {
@@ -150,7 +150,7 @@ func (a *App) DeleteImage(w http.ResponseWriter, r *http.Request) {
 	a.Logger = logs.New()
 	a.Record("Start", time.Now().Format(SQLDatetime))
 
-	a.Record("Resource", "story")
+	a.Record("Resource", "image")
 	a.Record("Method", r.Method)
 	a.Record("URL", r.URL.String())
 
