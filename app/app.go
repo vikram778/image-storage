@@ -13,6 +13,7 @@ import (
 	"github.com/willf/pad"
 	"image-storage/app/errs"
 	"image-storage/db"
+	"image-storage/kafka/producer"
 	"image-storage/logs"
 	"image-storage/migrate"
 	"image-storage/migration"
@@ -41,17 +42,23 @@ const (
 	DocPath = "/api/documentation"
 
 	SQLDatetime = "2006-01-02 15:04:05"
+
+	PostImageTopic   = "post_image"
+	DeleteImageTopic = "del_image"
+	PostAlbumTopic   = "post_album"
+	DeleteAlbumTopic = "del_album"
 )
 
 type App struct {
-	DB         *sqlx.DB
-	Logger     *logs.Log
-	Mux        *http.ServeMux
-	Router     *mux.Router
-	HttpClient *http.Client
-	Status     int
-	RawBody    interface{}
-	Port       string
+	DB          *sqlx.DB
+	Logger      *logs.Log
+	Mux         *http.ServeMux
+	KafkaConfig *producer.KafkaConfig
+	Router      *mux.Router
+	HttpClient  *http.Client
+	Status      int
+	RawBody     interface{}
+	Port        string
 }
 
 func NewApp() App {
@@ -66,11 +73,18 @@ func (a *App) Init() {
 	var (
 		database *db.DB
 		err      error
+		kconfig  *producer.KafkaConfig
 	)
 
 	if database, err = db.New(os.Getenv(constant.EnvDbDriver), os.Getenv(constant.EnvDbOpen)); err != nil {
 		return
 	}
+
+	if kconfig, err = producer.FormatConfiguration(); err != nil {
+		return
+	}
+
+	a.KafkaConfig = producer.NewKafkaProducer(kconfig.Brokers, kconfig.Topics, kconfig.Config, kconfig.Group, kconfig.Logger)
 
 	a.DB = database.Connection
 	a.Router = mux.NewRouter()
@@ -99,13 +113,18 @@ func (a *App) Migrate() (err error) {
 	return
 }
 
+// Jobs run background task
+func (a *App) Jobs() {
+	go producer.KafkaDispatcher(a.KafkaConfig)
+}
+
 // Listen start listening to the server
 func (s *App) Listen() {
 	log := logs.New()
 	log.Print("Initiating Server")
 	log.Print("Server Listening to ", s.Port)
 	log.Dump()
-
+	go s.Jobs()
 	http.ListenAndServe(s.Port, s.Router)
 }
 
