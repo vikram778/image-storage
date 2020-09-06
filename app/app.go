@@ -78,6 +78,7 @@ func (a *App) Init() {
 	a.Router.HandleFunc("/test", test)
 	a.Router.HandleFunc("/add/image", a.PostImage)
 	a.Router.HandleFunc("/add/album", a.PostAlbum)
+	a.Router.HandleFunc("/del/image/{id}", a.DeleteImage)
 }
 
 func (a *App) Migrate() (err error) {

@@ -1,7 +1,9 @@
 package app
 
 import (
+	"database/sql"
 	"errors"
+	"github.com/gorilla/mux"
 	"image-storage/app/errs"
 	"image-storage/app/resource/api/image"
 	"image-storage/filesystem"
@@ -10,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -128,6 +131,85 @@ func (a *App) PostImage(w http.ResponseWriter, r *http.Request) {
 
 	a.RawBody = res
 	a.Status = http.StatusOK
+	return
+
+}
+
+func (a *App) DeleteImage(w http.ResponseWriter, r *http.Request) {
+	var (
+		albm, _      = model.NewAlbum(a.DB)
+		img, _       = model.NewImage(a.DB)
+		res          image.DeleteResponse
+		err          error
+	)
+
+	defer func() {
+		a.Defer(w)
+	}()
+
+	a.Logger = logs.New()
+	a.Record("Start", time.Now().Format(SQLDatetime))
+
+	a.Record("Resource", "story")
+	a.Record("Method", r.Method)
+	a.Record("URL", r.URL.String())
+
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		a.FormatException(r, errors.New("invalid id"))
+		return
+	}
+
+	imgid, err := strconv.Atoi(id)
+	if err != nil {
+		a.FormatException(r, errors.New(errs.ErrInternalAppError))
+		return
+	}
+	img.ID.SetValid(int64(imgid))
+	err = img.GetImage()
+	if err != nil {
+		if err == sql.ErrNoRows {
+			err = errors.New(errs.ErrImageIDNotFound)
+		}
+		a.FormatException(r, err)
+		return
+	}
+
+	err = filesystem.Delete(img.ImagePath.String)
+	if err != nil {
+		a.FormatException(r, err)
+		return
+	}
+
+	albm.ID.SetValid(img.AlbumId.Int64)
+	err = albm.GetAlbumByID()
+	if err != nil {
+		a.FormatException(r, err)
+		return
+	}
+
+	count := albm.ImageCount.Int64 - 1
+	albm.ImageCount.SetValid(count)
+	err = albm.InsertOrUpdate(false)
+	if err != nil {
+		a.FormatException(r, err)
+		return
+	}
+
+	err = img.DeleteImage()
+	if err != nil {
+		a.FormatException(r, err)
+		return
+	}
+
+	res.ImagePath = img.ImagePath.String
+	res.AlbumTittle = albm.Tittle.String
+	res.Message = "image deleted successfully"
+
+	a.RawBody = res
+	a.Status = http.StatusOK
+
 	return
 
 }

@@ -28,9 +28,12 @@ func NewImage(db *sqlx.DB) (*Image, error) {
 
 func (me *Image) GetImage() (err error) {
 
-	query := `SELECT * FROM Images WHERE image_path = ?`
-	err = me.Db.Get(me, query, me.ImagePath)
-	if err != nil && err != sql.ErrNoRows {
+	query := `SELECT * FROM images WHERE id= ?`
+	err = me.Db.Get(me, query, me.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return err
+		}
 		err = errors.New(errs.ErrInternalDBError)
 		return
 	}
@@ -49,6 +52,18 @@ func (me *Image) Insert() (err error) {
 
 	id, _ := result.LastInsertId()
 	me.ID.SetValid(id)
+
+	return nil
+}
+
+func (me *Image) DeleteImage() (err error) {
+
+	query := `DELETE FROM images WHERE id = ?`
+	_, err = me.Db.Exec(query, me.ID)
+	if err != nil {
+		err = errors.New(errs.ErrInternalDBError)
+		return
+	}
 
 	return nil
 }
