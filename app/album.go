@@ -1,11 +1,13 @@
 package app
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"image-storage/app/errs"
 	"image-storage/app/resource/api/album"
 	"image-storage/filesystem"
+	"image-storage/kafka/producer"
 	"image-storage/logs"
 	"image-storage/model"
 	"net/http"
@@ -17,11 +19,12 @@ import (
 func (a *App) PostAlbum(w http.ResponseWriter, r *http.Request) {
 
 	var (
-		albm, _      = model.NewAlbum(a.DB)
-		req          album.PostAlbumRequest
-		res          album.PostAlbumResponse
-		err          error
-		album_folder string
+		albm, _           = model.NewAlbum(a.DB)
+		req               album.PostAlbumRequest
+		res               album.PostAlbumResponse
+		kafkanotification map[string]interface{}
+		err               error
+		album_folder      string
 	)
 
 	defer func() {
@@ -68,6 +71,12 @@ func (a *App) PostAlbum(w http.ResponseWriter, r *http.Request) {
 	res.AlbumTittle = req.AlbumTittle
 	res.Message = "Album created sucessfully"
 
+	kbyt, _ := json.Marshal(res)
+	json.Unmarshal(kbyt, &kafkanotification)
+	kafkanotification["topic"] = PostAlbumTopic
+
+	producer.Jobs <- kafkanotification
+
 	a.RawBody = res
 	a.Status = http.StatusOK
 
@@ -77,11 +86,12 @@ func (a *App) PostAlbum(w http.ResponseWriter, r *http.Request) {
 func (a *App) DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 
 	var (
-		albm, _      = model.NewAlbum(a.DB)
-		img, _       = model.NewImage(a.DB)
-		res          album.DeleteAlbumResponse
-		err          error
-		album_folder string
+		albm, _           = model.NewAlbum(a.DB)
+		img, _            = model.NewImage(a.DB)
+		res               album.DeleteAlbumResponse
+		kafkanotification map[string]interface{}
+		err               error
+		album_folder      string
 	)
 
 	defer func() {
@@ -140,6 +150,12 @@ func (a *App) DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 
 	res.AlbumTittle = albm.Tittle.String
 	res.Message = "album deleted successfully"
+
+	kbyt, _ := json.Marshal(res)
+	json.Unmarshal(kbyt, &kafkanotification)
+	kafkanotification["topic"] = DeleteAlbumTopic
+
+	producer.Jobs <- kafkanotification
 
 	a.RawBody = res
 	a.Status = http.StatusOK

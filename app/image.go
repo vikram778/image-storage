@@ -2,11 +2,13 @@ package app
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"image-storage/app/errs"
 	"image-storage/app/resource/api/image"
 	"image-storage/filesystem"
+	"image-storage/kafka/producer"
 	"image-storage/logs"
 	"image-storage/model"
 	"log"
@@ -18,12 +20,13 @@ import (
 
 func (a *App) PostImage(w http.ResponseWriter, r *http.Request) {
 	var (
-		albm, _      = model.NewAlbum(a.DB)
-		img, _       = model.NewImage(a.DB)
-		req          image.PostImageRequest
-		res          image.PostImageResponse
-		err          error
-		album_folder string
+		albm, _           = model.NewAlbum(a.DB)
+		img, _            = model.NewImage(a.DB)
+		req               image.PostImageRequest
+		res               image.PostImageResponse
+		err               error
+		album_folder      string
+		kafkanotification map[string]interface{}
 	)
 
 	defer func() {
@@ -129,6 +132,12 @@ func (a *App) PostImage(w http.ResponseWriter, r *http.Request) {
 	res.ImageName = imag.Filename
 	res.ImageID = img.ID.Int64
 
+	kbyt, _ := json.Marshal(res)
+	json.Unmarshal(kbyt, &kafkanotification)
+	kafkanotification["topic"] = PostImageTopic
+
+	producer.Jobs <- kafkanotification
+
 	a.RawBody = res
 	a.Status = http.StatusOK
 	return
@@ -137,10 +146,11 @@ func (a *App) PostImage(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) DeleteImage(w http.ResponseWriter, r *http.Request) {
 	var (
-		albm, _ = model.NewAlbum(a.DB)
-		img, _  = model.NewImage(a.DB)
-		res     image.DeleteResponse
-		err     error
+		albm, _           = model.NewAlbum(a.DB)
+		img, _            = model.NewImage(a.DB)
+		res               image.DeleteResponse
+		kafkanotification map[string]interface{}
+		err               error
 	)
 
 	defer func() {
@@ -206,6 +216,12 @@ func (a *App) DeleteImage(w http.ResponseWriter, r *http.Request) {
 	res.ImagePath = img.ImagePath.String
 	res.AlbumTittle = albm.Tittle.String
 	res.Message = "image deleted successfully"
+
+	kbyt, _ := json.Marshal(res)
+	json.Unmarshal(kbyt, &kafkanotification)
+	kafkanotification["topic"] = DeleteImageTopic
+
+	producer.Jobs <- kafkanotification
 
 	a.RawBody = res
 	a.Status = http.StatusOK
