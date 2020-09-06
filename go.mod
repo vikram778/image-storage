@@ -12,4 +12,5 @@ require (
 	github.com/kylelemons/go-gypsy v1.0.0 // indirect
 	github.com/willf/pad v0.0.0-20200313202418-172aa767f2a4
 	github.com/ziutek/mymysql v1.5.4 // indirect
+	gopkg.in/guregu/null.v3 v3.5.0
 )

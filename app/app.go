@@ -11,13 +11,6 @@ import (
 	"github.com/gorilla/schema"
 	"github.com/jmoiron/sqlx"
 	"github.com/willf/pad"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"os"
-	"strconv"
-	"strings"
-	"time"
 	"image-storage/app/errs"
 	"image-storage/db"
 	"image-storage/logs"
@@ -27,6 +20,13 @@ import (
 	"image-storage/modules/entity"
 	"image-storage/out"
 	"image-storage/paging"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 )
 
 const (
@@ -76,6 +76,8 @@ func (a *App) Init() {
 	a.Router = mux.NewRouter()
 	a.Port = os.Getenv("APP_PORT")
 	a.Router.HandleFunc("/test", test)
+	a.Router.HandleFunc("/add/image", a.PostImage)
+	a.Router.HandleFunc("/add/album", a.PostAlbum)
 }
 
 func (a *App) Migrate() (err error) {

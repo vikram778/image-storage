@@ -2,10 +2,10 @@ package logs
 
 import (
 	"fmt"
+	"image-storage/filesystem"
 	"os"
 	"strconv"
 	"time"
-	"image-storage/filesystem"
 
 	"github.com/willf/pad"
 )
@@ -192,7 +192,7 @@ func (l *Log) Dump() {
 		filesystem.Mkdir(p)
 	}
 
-	filename = fmt.Sprintf("%s/%d.%s.log", p, time.Now().UnixNano())
+	filename = fmt.Sprintf("%s/%d.log", p, time.Now().UnixNano())
 	file, _ := os.Create(filename)
 	defer file.Close()
 	l.entries = make([]Entry, 0)
