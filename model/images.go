@@ -17,6 +17,8 @@ type Image struct {
 	CreatedAt null.Time   `db:"created_at" json:"created_at"`
 }
 
+type Images []Image
+
 // NewImage function ...
 func NewImage(db *sqlx.DB) (*Image, error) {
 	if db == nil {
@@ -39,6 +41,21 @@ func (me *Image) GetImage() (err error) {
 	}
 
 	return nil
+}
+
+func (me *Image) GetImagesByAlbumID() (images Images, err error) {
+
+	query := `SELECT * FROM images WHERE album_id= ?`
+	err = me.Db.Select(&images, query, me.AlbumId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
+		err = errors.New(errs.ErrInternalDBError)
+		return
+	}
+
+	return images, nil
 }
 
 func (me *Image) Insert() (err error) {

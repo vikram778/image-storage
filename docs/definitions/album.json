@@ -1,0 +1,123 @@
+{
+  "baseUrl": "localhost:8080",
+  "paths": {
+    "/add/album": {
+    "post": {
+      "parameters": [],
+      "summary": "Create Album",
+      "tags": [
+        "Album"
+      ],
+      "security": [],
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "album_tittle": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Success",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "album_tittle": {
+                    "type": "string",
+                    "example": "test"
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "Album created sucessfully"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Failed",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string",
+                    "example": "album already exist"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+    "/del/album/{tittle}": {
+      "delete": {
+        "summary": "Remove Album",
+        "tags": [
+          "Album"
+        ],
+        "security": [],
+        "parameters": [{
+          "in": "path",
+          "name": "tittle",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "deleted successfully"
+                    },
+                    "album_tittle": {
+                      "type": "string",
+                      "example": "test"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "album doesn't exist"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
