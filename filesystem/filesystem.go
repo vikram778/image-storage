@@ -32,6 +32,11 @@ func Delete(filename string) error {
 	return os.Remove(filename)
 }
 
+// Delete delete file
+func DeleteDir(dir string) error {
+	return os.RemoveAll(dir)
+}
+
 // WriteOutputFile Writes the Output image file
 func WriteImage(dir, fileName string, records multipart.File) (err error) {
 

@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"github.com/gorilla/mux"
 	"image-storage/app/errs"
 	"image-storage/app/resource/api/album"
 	"image-storage/filesystem"
@@ -30,7 +31,7 @@ func (a *App) PostAlbum(w http.ResponseWriter, r *http.Request) {
 	a.Logger = logs.New()
 	a.Record("Start", time.Now().Format(SQLDatetime))
 
-	a.Record("Resource", "story")
+	a.Record("Resource", "album")
 	a.Record("Method", r.Method)
 	a.Record("URL", r.URL.String())
 	a.Record("Request", strings.Replace(string(a.Body(r)), "\n", "", -1))
@@ -48,7 +49,7 @@ func (a *App) PostAlbum(w http.ResponseWriter, r *http.Request) {
 	albumpath := album_folder + "/" + req.AlbumTittle
 	if exist, _ := filesystem.Exist(albumpath); exist {
 		a.Record("Error Album Doesnt exist:", req.AlbumTittle)
-		a.FormatException(r, errors.New(errs.ErrAlbumNotExist))
+		a.FormatException(r, errors.New(errs.ErrAlbumExist))
 		return
 	}
 
@@ -71,4 +72,78 @@ func (a *App) PostAlbum(w http.ResponseWriter, r *http.Request) {
 	a.Status = http.StatusOK
 
 	return
+}
+
+func (a *App) DeleteAlbum(w http.ResponseWriter, r *http.Request) {
+
+	var (
+		albm, _      = model.NewAlbum(a.DB)
+		img, _       = model.NewImage(a.DB)
+		res          album.DeleteAlbumResponse
+		err          error
+		album_folder string
+	)
+
+	defer func() {
+		a.Defer(w)
+	}()
+
+	a.Logger = logs.New()
+	a.Record("Start", time.Now().Format(SQLDatetime))
+
+	a.Record("Resource", "album")
+	a.Record("Method", r.Method)
+	a.Record("URL", r.URL.String())
+
+	vars := mux.Vars(r)
+	tittle, ok := vars["tittle"]
+	if !ok {
+		a.FormatException(r, errors.New("invalid tittle"))
+		return
+	}
+
+	albm.Tittle.SetValid(tittle)
+	err = albm.GetAlbum()
+	if err != nil {
+		a.FormatException(r, err)
+		return
+	}
+
+	if !albm.ID.Valid {
+		a.FormatException(r, errors.New(errs.ErrAlbumNotExist))
+		return
+	}
+
+	if os.Getenv("ALBUM_FOLDER") != "" {
+		album_folder = os.Getenv("ALBUM_FOLDER")
+	}
+
+	albumpath := album_folder + "/" + tittle
+	exist, _ := filesystem.Exist(albumpath)
+	if exist {
+		err = filesystem.DeleteDir(albumpath)
+		if err != nil {
+			a.FormatException(r, err)
+		}
+	}
+
+	img.AlbumId.SetValid(albm.ID.Int64)
+	err = img.DeleteImagesByAlbumID()
+	if err != nil {
+		a.FormatException(r, err)
+	}
+
+	err = albm.DeleteAlbum()
+	if err != nil {
+		a.FormatException(r, err)
+	}
+
+	res.AlbumTittle = albm.Tittle.String
+	res.Message = "album deleted successfully"
+
+	a.RawBody = res
+	a.Status = http.StatusOK
+
+	return
+
 }

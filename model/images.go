@@ -67,3 +67,15 @@ func (me *Image) DeleteImage() (err error) {
 
 	return nil
 }
+
+func (me *Image) DeleteImagesByAlbumID() (err error) {
+
+	query := `DELETE FROM images WHERE album_id = ?`
+	_, err = me.Db.Exec(query, me.AlbumId)
+	if err != nil {
+		err = errors.New(errs.ErrInternalDBError)
+		return
+	}
+
+	return nil
+}
