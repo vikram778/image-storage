@@ -15,6 +15,7 @@ const (
 	ErrAlbumNotExist      = "E400005"
 	ErrImageExist         = "E400006"
 	ErrAlbumExist         = "E400007"
+	ErrImageIDNotFound    = "E400008"
 )
 
 // Error constants for 404 bad request
@@ -66,6 +67,7 @@ func init() {
 			ErrAlbumNotExist:     "Album doesn't exist",
 			ErrImageExist:        "Image already exist",
 			ErrAlbumExist:        "Album already exist",
+			ErrImageIDNotFound:   "Image id not found",
 		},
 		http.StatusNotFound: {
 			ErrResourceNotFound: "Resource Not found",

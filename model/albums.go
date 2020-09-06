@@ -39,6 +39,18 @@ func (me *Album) GetAlbum() (err error) {
 	return nil
 }
 
+func (me *Album) GetAlbumByID() (err error) {
+
+	query := `SELECT * FROM albums WHERE id = ?`
+	err = me.Db.Get(me, query, me.ID)
+	if err != nil && err != sql.ErrNoRows {
+		err = errors.New(errs.ErrInternalDBError)
+		return
+	}
+
+	return nil
+}
+
 func (me *Album) InsertOrUpdate(ok bool) (err error) {
 	if ok {
 		me.CreatedAt.SetValid(time.Now())
