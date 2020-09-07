@@ -13,6 +13,7 @@ import (
 	"github.com/willf/pad"
 	"image-storage/app/errs"
 	"image-storage/db"
+	"image-storage/filesystem"
 	"image-storage/kafka/producer"
 	"image-storage/logs"
 	"image-storage/migrate"
@@ -20,12 +21,10 @@ import (
 	"image-storage/modules/constant"
 	"image-storage/modules/entity"
 	"image-storage/out"
-	"image-storage/paging"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -74,6 +73,11 @@ func (a *App) Init() {
 
 	a.Logger = logs.New()
 
+	err = a.CheckAlbumsDir()
+	if err != nil {
+		return
+	}
+
 	if database, err = db.New(os.Getenv(constant.EnvDbDriver), os.Getenv(constant.EnvDbOpen)); err != nil {
 		return
 	}
@@ -94,6 +98,26 @@ func (a *App) Init() {
 	a.Router.HandleFunc("/get/image/{id}", a.GetImage)
 	a.Router.HandleFunc("/del/image/{id}", a.DeleteImage)
 	a.Router.HandleFunc("/del/album/{tittle}", a.DeleteAlbum)
+}
+
+func (a *App) CheckAlbumsDir() (err error) {
+	var album_folder string
+	if os.Getenv("ALBUM_FOLDER") != "" {
+		album_folder = os.Getenv("ALBUM_FOLDER")
+	}
+
+	exist, _ := filesystem.Exist(album_folder)
+	if !exist {
+		err = filesystem.Mkdir(album_folder)
+	}
+	return
+}
+
+func (a *App) GetAlbumsDir() (album_folder string) {
+	if os.Getenv("ALBUM_FOLDER") != "" {
+		album_folder = os.Getenv("ALBUM_FOLDER")
+	}
+	return
 }
 
 func (a *App) Migrate() (err error) {
@@ -282,22 +306,6 @@ func (r *App) GetParams(o interface{}, Response http.ResponseWriter, Request *ht
 		}
 	}
 	return
-}
-
-// Paginate create a pagination
-func (r *App) Paginate(Request *http.Request, count int64) {
-	var (
-		limit, offset int
-	)
-
-	limit, _ = strconv.Atoi(r.GetQuery(Request, "limit", DefaultLimit))
-	offset, _ = strconv.Atoi(r.GetQuery(Request, "offset", "0"))
-
-	page := paging.NewPaging(r.RawBody, offset, limit, count)
-	page.Init(Request)
-
-	r.RawBody = page
-
 }
 
 // Body returns the body from the request

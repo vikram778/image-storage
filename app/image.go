@@ -82,12 +82,7 @@ func (a *App) PostImage(w http.ResponseWriter, r *http.Request) {
 	a.Record("File Size:", imag.Size)
 	a.Record("MIME Header:", imag.Header)
 
-	// Create a temporary file within our temp-images directory that follows
-	// a particular naming pattern
-
-	if os.Getenv("ALBUM_FOLDER") != "" {
-		album_folder = os.Getenv("ALBUM_FOLDER")
-	}
+	album_folder = a.GetAlbumsDir()
 
 	albumpath := album_folder + "/" + req.AlbumTittle
 
@@ -273,7 +268,7 @@ func (a *App) GetImage(w http.ResponseWriter, r *http.Request) {
 	imgp, err := os.Open(img.ImagePath.String)
 	if err != nil {
 		a.FormatException(r, err)
-		return // perhaps handle this nicer
+		return
 	}
 	defer imgp.Close()
 	w.Header().Set("Content-Type", "image/jpeg") // <-- set the content-type header

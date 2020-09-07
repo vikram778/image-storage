@@ -11,7 +11,6 @@ import (
 	"image-storage/logs"
 	"image-storage/model"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -45,9 +44,7 @@ func (a *App) PostAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if os.Getenv("ALBUM_FOLDER") != "" {
-		album_folder = os.Getenv("ALBUM_FOLDER")
-	}
+	album_folder = a.GetAlbumsDir()
 
 	albumpath := album_folder + "/" + req.AlbumTittle
 	if exist, _ := filesystem.Exist(albumpath); exist {
@@ -124,9 +121,7 @@ func (a *App) DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if os.Getenv("ALBUM_FOLDER") != "" {
-		album_folder = os.Getenv("ALBUM_FOLDER")
-	}
+	album_folder = a.GetAlbumsDir()
 
 	albumpath := album_folder + "/" + tittle
 	exist, _ := filesystem.Exist(albumpath)
